@@ -73,12 +73,12 @@ function reload_level(){
 function load_level(lnum){
 	level = lnum;
 
-	blocks = levels[lnum][1].concat([
+	blocks = [
 		[BLOCK_WALL,-1,-1,1,SCR_SIZE],
 		[BLOCK_WALL,-1,-1,SCR_SIZE,1],
 		[BLOCK_WALL,NUM_BLOCKS,-1,1,SCR_SIZE],
 		[BLOCK_WALL,-1,NUM_BLOCKS,SCR_SIZE,1]
-	]);
+	].concat(levels[lnum][1]);
 
 	level_title = levels[lnum][0];
 	msg=[];
