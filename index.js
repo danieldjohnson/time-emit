@@ -471,6 +471,15 @@ function update(){
 	aframe = window.requestAnimationFrame(update);
 }
 
+function drawText(text,size,x,y,bold,font){
+	ctx.save();
+	ctx.translate(x,y);
+	ctx.scale(1/BLOCKSIZE, 1/BLOCKSIZE);
+	ctx.font = (bold?"bold ":"") + (size*BLOCKSIZE) + "px "+(font||"sans-serif");
+	ctx.fillText(text,0,0);
+	ctx.restore();
+}
+
 function draw(){
 	ctx.save();
 	ctx.scale(BLOCKSIZE,BLOCKSIZE);
@@ -604,8 +613,7 @@ function draw(){
 			case BLOCK_HINT:
 				ctx.fillStyle="#fff";
 				ctx.textAlign = "center";
-				ctx.font = "0.65px sans-serif";
-				ctx.fillText(obj[3],obj[1],obj[2]);
+				drawText(obj[3],.65,obj[1],obj[2]);
 				break;
 		}
 	});
@@ -696,9 +704,8 @@ function draw(){
 	}
 	if(replay_check_state){
 		ctx.textAlign = "start";
-		ctx.font = "1px sans-serif";
 		ctx.fillStyle="#fff";
-		ctx.fillText("REPLAY",0,0);
+		drawText("REPLAY",1,0,0);
 	}
 	
 	ctx.translate(SCR_SIZE-1,-1);
@@ -710,28 +717,24 @@ function draw(){
 	ctx.fillRect(1,1,SCR_SIZE-2,SCR_SIZE-2);
 
 	ctx.textAlign = "end";
-	ctx.font = "1px sans-serif";
 	ctx.fillStyle=isfwd?"#08f":"#fff";
-	ctx.fillText("TIME |",SCR_SIZE/2,2);
+	drawText("TIME |",1,SCR_SIZE/2,2);
 	ctx.save();
 	ctx.scale(-1,1);
 	ctx.fillStyle=isfwd?"#fff":"#f0f";
-	ctx.fillText("TIME |",-SCR_SIZE/2,2);
+	drawText("TIME |",1,-SCR_SIZE/2,2);
 	ctx.restore();
 
 	ctx.fillStyle = "#fff";
 	ctx.textAlign = "center";
 	
-	ctx.font = "bold 0.65px sans-serif";
-	ctx.fillText(level_title,SCR_SIZE/2,4);
+	drawText(level_title,.65,SCR_SIZE/2,4,true);
 	
-	ctx.font = "0.65px sans-serif";
 	for(var i = 0; i < msg.length; i++){
-		ctx.fillText(msg[i],SCR_SIZE/2,6+i,NUM_BLOCKS);
+		drawText(msg[i],.65,SCR_SIZE/2,6+i,NUM_BLOCKS);
 	}
 
-	ctx.font = "1px monospace";
-	ctx.fillText((time/60).toFixed(2),SCR_SIZE/2,10);
+	drawText((time/60).toFixed(2),1,SCR_SIZE/2,10,false,"monospace");
 
 	ctx.translate(0,10.5);
 	ctx.beginPath();

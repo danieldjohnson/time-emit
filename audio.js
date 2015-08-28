@@ -54,13 +54,13 @@ function generate(t){
 		if(evttime + PING_LEN > t && evttime < t){
 			var freq = evts[i][1];
 			var wave1 = sqr(freq*fundamental*t/SAMPLE_RATE);
-			level += 0.3*Math.pow(1-(t-evttime)/PING_LEN,2)*wave1;
+			level += 0.15*Math.pow(1-(t-evttime)/PING_LEN,2)*wave1;
 		}
 	};
 	var base = sqr(54*fundamental*t/SAMPLE_RATE);
-	level += 0.3*Math.pow(1-goodMod(t,QUANTIZE*4)/QUANTIZE/4,2)*base;
+	level += 0.15*Math.pow(1-goodMod(t,QUANTIZE*4)/QUANTIZE/4,2)*base;
 	var motor = sqr(54*fundamental*t/SAMPLE_RATE);
-	level += 0.1*Math.pow(1-goodMod(t,QUANTIZE)/QUANTIZE,2)*motor;
+	level += 0.05*Math.pow(1-goodMod(t,QUANTIZE)/QUANTIZE,2)*motor;
 	return level;
 }
 
