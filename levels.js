@@ -28,7 +28,12 @@ var levels = [
 	[BLOCK_LEVELSELECT,	6,10,1,1, 11],
 	[BLOCK_LEVELSELECT,	4,10,1,1, 12],
 	[BLOCK_LEVELSELECT,	2,10,1,1, 13],
-]],
+],
+"\"The laws of physics are symmetric with respect to time.  There is nothing \
+that requires time to run only in a single direction. And finally, after years \
+of research, we have cracked the code. We can reverse the arrow.\"\n\
+     - Steven Richards, Founder of Causality Laboratories"
+],
 
 ["Beginnings",[
 	[BLOCK_SPAWN,3,5],
@@ -42,7 +47,13 @@ var levels = [
 	[BLOCK_EXIT,13,6],
 	[BLOCK_HINT,7,3.5,"Z to press button"],
 	[BLOCK_HINT,13.5,9,"Z to open exit"],
-]],
+],
+"\"Welcome to Causality Labs! For your protection, separate zones in our \
+facility are separated by large blast doors. Please do not loiter directly \
+below any blast door, as they are very heavy. We will try not to crush you \
+beneath them, but accidents can happen!\"\n\
+     - from Causality Labs Visitor Information Packet"
+],
 
 ["Heavy Lifting",[
 	[BLOCK_SPAWN,2,2],
@@ -61,7 +72,12 @@ var levels = [
 	[BLOCK_BOX, 5,11],
 	[BLOCK_EXIT,13,13],
 	[BLOCK_HINT,11,6,"Z to pick up boxes"]
-]],
+],
+"\"Please refrain from handling our Uniform Density Matter Cubes by the \
+corners, which may be extremely sharp. The cost of cleaning up any bloodstains \
+on the cubes must be paid in full by any employee who stains them.\"\n\
+     - Causality Labs Equipment Manual, page 75"
+],
 
 ["Undo/Redo",[
 	[BLOCK_SPAWN,3,5],
@@ -78,7 +94,14 @@ var levels = [
 	[BLOCK_HINT,8,2.5,"Space to reverse time in white zones"],
 	[BLOCK_HINT,8,14,"Green circle follows you"],
 	[BLOCK_HINT,8,15,"Previous actions become time echoes"],
-]],
+],
+"\"Under NO circumstances should you attempt to communicate or interfere with \
+the actions of your previous self! If you believe you are caught in a paradox, \
+close your eyes, plug your ears, and scream 'CODE PURPLE' as loudly as you \
+can. A causality restoration team will be with you shortly to reset your \
+timeline.\"\n\
+    - Causality Labs Safety Guidelines for New Employees, page 27"
+],
 
 ["The Long Way Around",[
 	[BLOCK_SPAWN,3,5],
@@ -103,7 +126,12 @@ var levels = [
 	[BLOCK_WALL,0,14,16,2],
 	[BLOCK_ONEWAY,5,3,6,1,0],
 	[BLOCK_HINT,8,1,"Lasers kill you"],
-]],
+],
+"\"For your safety, we have installed deadly high-powered lasers in \
+high-security areas. Remember, even time travel can't help you if you have \
+been vaporized!\"\n\
+    - Causality Labs Safety Guidelines for New Employees, page 13"
+],
 
 ["Too Many Buttons",[
 	[BLOCK_SPAWN,8,1],
@@ -118,7 +146,12 @@ var levels = [
 	[BLOCK_WALL,0,7,7,3],
 	[BLOCK_WALL,10,7,7,3],
 	[BLOCK_EXIT,8,9],
-]],
+],
+"\"4. Conservation of Matter. Just ignore it. Really. Our physicists are still \
+working on this one. Time travel is weird.\"\n\
+    - Excerpt from \"10 Surprising Wrong Things You Learned in School\", a \
+Causality Labs Community Relations pamphlet"
+],
 
 ["Button Mashing",[
 
@@ -152,7 +185,13 @@ var levels = [
 	[BLOCK_WALL, 8,4,1,5],
 	[BLOCK_WALL, 7,7,1,5],
 
-]],
+],
+"\"Excessive exposure to the Time-Reversal Device in a short interval may \
+cause a number of minor side effects, including but not limited to: vomiting, \
+hair loss, blindness, paranoia, radiation poisoning, and total cellular \
+breakdown. Causality Labs is not responsible for any improper use of the TRD.\"\n\
+    - Causality Labs Release of Liability Agreement"
+],
 
 ["Choreography",[
 
@@ -180,7 +219,13 @@ var levels = [
 
 	[BLOCK_EXIT,14,10],
 
-]],
+],
+"\"Federal security codes mandate that sensitive areas be protected by eight \
+consecutive lead-enforced blast doors, which require three trained Security \
+Technicians to operate. Under no circumstances attempt to enter these areas \
+without proper escorts.\"\n\
+    - Causality Labs Safety Guidelines for New Employees, page 416"
+],
 
 ["Feynman",[
 
@@ -214,7 +259,14 @@ var levels = [
 
 	[BLOCK_HINT,8,14,"Orange grids block boxes"],
 
-]],
+],
+"\"Our Density Interference Grids are carefully calibrated to repel our \
+Uniform Density Matter Cubes. However, in some cases, badly-calibrated fields \
+may block other high-density materials, such as keys, tooth fillings, and \
+components of pacemakers. Unfortunately these fields cannot be deactivated, so \
+these items may need to be left behind.\"\n\
+    - Causality Labs Equipment Manual, page 136"
+],
 
 ["Equal and Opposite",[
 
@@ -269,7 +321,13 @@ var levels = [
 
 	[BLOCK_EXIT,14,15],
 
-]],
+],
+"\"As part of our corporate redecoration, we will be replacing some of our \
+blue forward-locked time fields with purple backward-locked fields. We \
+apologize for any inconvenience, and hope this will allow for a much more \
+pleasant, colorful work experience!\"\n\
+    - Bob Bobson, VP of Human Resources"
+],
 
 ["Laser Tag",[
 
@@ -311,7 +369,12 @@ var levels = [
 
 	[BLOCK_EXIT,8,15],
 
-]],
+],
+"\"Room 32B looks so empty. It's boring. Why don't you put some of those new \
+things in there? You know, the high-powered laser somethings we just bought? \
+I'm sure they'd make it look much more inviting.\"\n\
+    - Internal memo from founder Steven Richards to HR"
+],
 
 ["There and Back Again",[
 
@@ -355,7 +418,13 @@ var levels = [
 	[BLOCK_BUTTON,15,13],
 	[BLOCK_DOOR,15,14,1,1,'H'],
 
-]],
+],
+"\"Ever wished you could be two different places at the same time! Well, now \
+you can! Spend a whole day at work, then go back and spend it again with your \
+kids! Take a vacation and be back before you left! All this could be yours for \
+just $29.99! That's right, just twenty-nine point nine-nine factorial dollars.\"\n\
+    - Mike \"Blink\" Johnson, Causality Labs Salesperson"
+],
 
 ["Around the World",[
 
@@ -403,9 +472,14 @@ var levels = [
 	[BLOCK_EXIT,14,14],
 	[BLOCK_LASER,13,13,3,3,'BCDE']
 
-]],
+],
+"\"Notice: Any reports of our Uniform Density Matter Cubes exploding without \
+warning have been greatly exaggerated. The cubes always emit a warning beep 3 \
+seconds before detonation.\"\n\
+    - Maria Thompson, VP of Lab Safety"
+],
 
-["No Regrets",[
+["Reverse Engineering",[
 
 	[BLOCK_EXIT,15,11],
 
@@ -465,7 +539,13 @@ var levels = [
 	[BLOCK_DOOR,14,11,1,1,'GHIJ'],
 
 
-]],
+],
+"\"Please refrain from loitering in our One-Way Control Fields for extended \
+periods of time. Airflow through them is a major problem. Causality Labs would \
+like to remind you that asphyxiation in our facilities is not covered by our \
+insurance policy!\"\n\
+    - Causality Labs Safety Guidelines for New Employees, page 853"
+],
 
 // ["!!! Kitchen Sink !!!",[
 // 	[BLOCK_SPAWN, 		0,0],

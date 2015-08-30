@@ -10,6 +10,10 @@ var dirs=[0,0,0,0];
 var paused=false;
 var suspended=false;
 
+var showing_flavortext=false;
+var flavortext;
+var flavortext_progress;
+
 var paradox=null;
 
 var time = 0;
@@ -28,6 +32,7 @@ var boxes = [];
 var triggers = [];
 
 var level;
+var cleared_levels;
 
 var aframe;
 
@@ -47,6 +52,8 @@ function setup(){
 	ctx = canvas.getContext('2d');
 	enhanceContext(canvas,ctx);
 	muted = false;
+
+	cleared_levels = localStorage["cleared_levels"] ? JSON.parse(localStorage["cleared_levels"]) : {};
 }
 
 function enhanceContext(canvas, context) {
@@ -64,13 +71,13 @@ function enhanceContext(canvas, context) {
 }
 
 function start(){
-	load_level(0);
+	load_level(0,true);
 }
 
 function reload_level(){
-	load_level(level);
+	load_level(level,false);
 }
-function load_level(lnum){
+function load_level(lnum,should_show_flavortext){
 	level = lnum;
 
 	blocks = [
@@ -100,6 +107,10 @@ function load_level(lnum){
 
 	shouldflip=false;
 	shouldgrab=false;
+
+	flavortext_progress = 0;
+	flavortext = levels[lnum][2];
+	showing_flavortext = flavortext !== undefined && should_show_flavortext;
 
 	for(var i = 0; i < blocks.length; i++){
 		var obj = blocks[i];
@@ -298,7 +309,7 @@ function move_player(){
 							}
 							break;
 						case BLOCK_LEVELSELECT:
-							load_level(obj[5]);
+							load_level(obj[5],true);
 							return false;
 						case BLOCK_EXIT:
 							replay_check_state = REPLAY_STATE_REWIND;
@@ -397,7 +408,7 @@ function update(){
 		aframe = null;
 	}
 
-	if(!paused&&!suspended){
+	if(!(paused||suspended||showing_flavortext)){
 
 		if(replay_check_state){
 			var repfwd = replay_check_state==REPLAY_STATE_FWD;
@@ -422,10 +433,12 @@ function update(){
 				}
 				if(repfwd){
 					if(time>limit_bound+REPLAY_BUFFER){
+						cleared_levels[level] = true;
+						localStorage["cleared_levels"] = JSON.stringify(cleared_levels);
 						if(level<levels.length-1)
-							load_level(level+1);
+							load_level(level+1,true);
 						else
-							load_level(0);
+							load_level(0,false);
 						break;
 					}
 				}else{
@@ -466,17 +479,41 @@ function update(){
 		draw();
 
 	}else{
+		if(showing_flavortext && flavortext_progress < 1)
+			flavortext_progress += 1/60;
 		draw();
 	}
 	aframe = window.requestAnimationFrame(update);
 }
 
-function drawText(text,size,x,y,bold,font){
+function drawText(text,size,x,y,modifiers,font,wrap_width){
 	ctx.save();
 	ctx.translate(x,y);
 	ctx.scale(1/BLOCKSIZE, 1/BLOCKSIZE);
-	ctx.font = (bold?"bold ":"") + (size*BLOCKSIZE) + "px "+(font||"sans-serif");
-	ctx.fillText(text,0,0);
+	ctx.font = (modifiers?modifiers+" ":"") + (size*BLOCKSIZE) + "px "+(font||"sans-serif");
+	if(wrap_width){
+		wrap_width *= BLOCKSIZE;
+		var words = [];
+		var lines = text.split('\n');
+		for (var i = 0; i < lines.length; i++) {
+			words = words.concat(lines[i].split(' '));
+			words.push(null);
+		};
+		var curLine = [];
+		for(var i = 0; i < words.length; i++) {
+			var testLine = curLine.concat(words[i]);
+			if(words[i] === null || (testLine.length > 1 && ctx.measureText(testLine.join(' ')).width > wrap_width)){
+				ctx.fillText(curLine.join(' '),0,0);
+				ctx.translate(0,size*BLOCKSIZE*1.5);
+				curLine = words[i] === null ? [] : [words[i]];
+			}else{
+				curLine = testLine;
+			}
+        }
+        ctx.fillText(curLine.join(' '),0,0);
+	}else{
+		ctx.fillText(text,0,0);
+	}
 	ctx.restore();
 }
 
@@ -516,6 +553,9 @@ function draw(){
 			case BLOCK_BUTTON:
 				ctx.fillStyle=pressed_button(obj)?"#a30":"#f50";
 				ctx.fillRect(obj[1]+.2,obj[2]+.2,.6,.6);
+				ctx.strokeStyle="#820";
+				ctx.lineWidth=0.01;
+				ctx.strokeRect(obj[1]+.3,obj[2]+.3,.4,.4);
 				break;
 			case BLOCK_DOOR:
 				ctx.fillStyle=active?"#777":"rgba(100,100,100,.1)";
@@ -570,6 +610,16 @@ function draw(){
 				ctx.lineTo(.5,.9);
 				ctx.lineTo(.1,.5);
 				ctx.closePath();
+				ctx.moveTo(.5,.2);
+				ctx.lineTo(.2,.5);
+				ctx.lineTo(.5,.8);
+				ctx.lineTo(.8,.5);
+				ctx.closePath();
+				ctx.moveTo(.5,.3);
+				ctx.lineTo(.7,.5);
+				ctx.lineTo(.5,.7);
+				ctx.lineTo(.3,.5);
+				ctx.closePath();
 				ctx.fill();
 				ctx.translate(-obj[1],-obj[2]);
 				break;
@@ -607,7 +657,10 @@ function draw(){
 				ctx.fill();
 				break;
 			case BLOCK_LEVELSELECT:
-				ctx.fillStyle="#0f0";
+				if(cleared_levels[obj[5]])
+					ctx.fillStyle="#676";
+				else
+					ctx.fillStyle="#0f0";
 				ctx.fillRect(obj[1]+.2,obj[2]+.2,.6,.6);
 				break;
 			case BLOCK_HINT:
@@ -701,11 +754,20 @@ function draw(){
 			ctx.arc(paradox[0], paradox[1], 4*RADIUS, 0, 7);
 			ctx.stroke();
 		}
+	} else if(showing_flavortext){
+		ctx.fillStyle="rgba(0,0,0,0.9)";
+		ctx.fillRect(-1,-1,SCR_SIZE,SCR_SIZE);
+		ctx.textAlign = "start";
+		ctx.fillStyle="#fff";
+		drawText(flavortext.substring(0,flavortext.length*flavortext_progress),.5,1,6,'italic',null,NUM_BLOCKS-2);
+
+		ctx.textAlign = "center";
+		drawText("Press any key to continue",.4,NUM_BLOCKS/2,15,'italic');
 	}
 	if(replay_check_state){
 		ctx.textAlign = "start";
 		ctx.fillStyle="#fff";
-		drawText("REPLAY",1,0,0);
+		drawText("REPLAY",.75,0,-0.2);
 	}
 	
 	ctx.translate(SCR_SIZE-1,-1);
@@ -728,13 +790,13 @@ function draw(){
 	ctx.fillStyle = "#fff";
 	ctx.textAlign = "center";
 	
-	drawText(level_title,.65,SCR_SIZE/2,4,true);
+	drawText(level_title,.65,SCR_SIZE/2,4,'bold');
 	
 	for(var i = 0; i < msg.length; i++){
-		drawText(msg[i],.65,SCR_SIZE/2,6+i,NUM_BLOCKS);
+		drawText(msg[i],.65,SCR_SIZE/2,6+i);
 	}
 
-	drawText((time/60).toFixed(2),1,SCR_SIZE/2,10,false,"monospace");
+	drawText((time/60).toFixed(2),1,SCR_SIZE/2,10,'',"monospace");
 
 	ctx.translate(0,10.5);
 	ctx.beginPath();
@@ -764,6 +826,12 @@ function draw(){
 addEventListener("keydown", function(e) {
 	if(levelloader==document.activeElement) return;
 	e = e || window.event;
+
+	if(showing_flavortext){
+		showing_flavortext = false;
+		return;
+	}
+
 	dirs[e.keyCode-37] = 1;
 	console.log(e.keyCode,dirs);
 	if(e.keyCode==KEY_SPACE){
@@ -782,7 +850,7 @@ addEventListener("keydown", function(e) {
 		reload_level();
 	}
 	if(e.keyCode==KEY_QUIT){
-		load_level(0);
+		load_level(0,false);
 	}
 	if(e.keyCode==KEY_MUTE){
 		muted ^= 1;
@@ -808,7 +876,7 @@ window.onload=function(){
 		try{
 			var nlevel = eval(levelloader.value);
 			levels[levels.length-1] = nlevel;
-			load_level(levels.length-1);
+			load_level(levels.length-1,true);
 			update();
 			// paused=true;
 		} catch (e) {
