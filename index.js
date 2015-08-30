@@ -328,15 +328,13 @@ function move_player(){
 		paradox = [posx,posy];
 		switch(hit_obj[0]){
 			case BLOCK_DOOR:
-				msg = ["You got hit by a door.","R to restart"];
+				msg = ["You got crushed by a door.","R to restart"];
 				break;
 			case BLOCK_FWD:
 			case BLOCK_BWD:
 			case BLOCK_NOBOX:
 				msg = ["You got caught in an incompatible field.","R to restart"];
 				break;
-			default:
-				msg = ["You died.","R to restart"];
 		}
 	}
 
@@ -375,7 +373,7 @@ function check_histories(fwd,check_last){
 			if(checkCollides(state[0],state[1],dir,state[2])||killed(state[0],state[1])){
 				suspended=true;
 				paradox = [state[0],state[1]];
-				msg=["PARADOX: Time echo can't pass!","R to restart"];
+				msg=["PARADOX: Time echo can't move here!","R to restart"];
 			}
 			if(killed(state[0],state[1])){
 				suspended=true;
