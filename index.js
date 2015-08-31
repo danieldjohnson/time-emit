@@ -477,7 +477,6 @@ function update(){
 					break;
 				var limit_bound=historyBounds[0][0];
 				for (var i = 0; i < historyBounds.length; i++) {
-					var dir = isfwd != i%2;
 					var bounds = historyBounds[i];
 					limit_bound = (repfwd ? Math.max : Math.min)(bounds[0],bounds[1],limit_bound);
 				}
