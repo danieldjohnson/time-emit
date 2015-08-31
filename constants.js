@@ -36,5 +36,3 @@ var REPLAY_REW_SPEED = 10;
 var REPLAY_FWD_SPEED = 2;
 var REPLAY_IMMOBILE_WAIT = 120;
 var REPLAY_BUFFER = 60;
-
-var abs = Math.abs;

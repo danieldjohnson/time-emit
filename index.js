@@ -1,61 +1,84 @@
 
+var abs = Math.abs;
+
 var canvas, ctx;
 
 var msg, level_title;
 
-var posx = 0;
-var posy = 0;
-var dirs=[0,0,0,0];
+// Player position
+var posx;
+var posy;
 
-var paused=false;
-var suspended=false;
+// Directional keys held down
+var dirs;
 
-var showing_flavortext=false;
+// Game state flags
+var paused;
+var suspended;
+
+var showing_flavortext;
 var flavortext;
 var flavortext_progress;
 
-var paradox=null;
+// If set, marks the location of the paradox red circle
+var paradox;
 
-var time = 0;
-var isfwd = true;
-var hasbox = false;
+// Player state
+var time;
+var isfwd;
+var hasbox;
+
+
+var shouldflip;
+var shouldgrab;
+
+// List of all past positions of the player, by history index, then time
+var histories;
+
+// Bounds in time of the existence of each time echo
+var historyBounds;
+
+// Lists of current level objects
+var blocks;
+var boxes;
+var triggers;
 
 var active_buttons;
 
-var shouldflip=false;
-var shouldgrab=false;
-
-var histories = [];
-var historyBounds=[];
-var blocks = [];
-var boxes = [];
-var triggers = [];
-
+// Current level
 var level;
+
+// Dictionary of cleared levels
 var cleared_levels;
 
+// Last requestAnimationFrame return value
 var aframe;
 
-var fundamental;
+// Keeps track of state during end-level replays
+var replay_check_state;
+var replay_immobile_ct;
 
-var replay_check_state = REPLAY_STATE_NONE;
-var replay_immobile_ct = 0;
-
+// Whether to mute audio
 var muted;
 
+// Generate a deterministic "random" number given an input seed
 function detrand(seed){
 	return goodMod(Math.sin(seed) * 10000,1)
 }
 
+// Sets up the game environment
 function setup(){
 	canvas = document.getElementById('c');
 	ctx = canvas.getContext('2d');
 	enhanceContext(canvas,ctx);
 	muted = false;
 
+	dirs = [0,0,0,0];
+
 	cleared_levels = localStorage["cleared_levels"] ? JSON.parse(localStorage["cleared_levels"]) : {};
 }
 
+// Make it look nice on retina display
 function enhanceContext(canvas, context) {
     var ratio = window.devicePixelRatio || 1,
         width = canvas.width,
@@ -70,16 +93,22 @@ function enhanceContext(canvas, context) {
     }
 }
 
+// Called once at game start
 function start(){
 	load_level(0,true);
 }
 
+// Called when pressing R
 function reload_level(){
 	load_level(level,false);
 }
+
+// This function is responsible for loading or reloading a level. It resets all of the
+// game state, loads the new level layout, and displays the level flavortext
 function load_level(lnum,should_show_flavortext){
 	level = lnum;
 
+	// Add screen border walls
 	blocks = [
 		[BLOCK_WALL,-1,-1,1,SCR_SIZE],
 		[BLOCK_WALL,-1,-1,SCR_SIZE,1],
@@ -112,6 +141,7 @@ function load_level(lnum,should_show_flavortext){
 	flavortext = levels[lnum][2];
 	showing_flavortext = flavortext !== undefined && should_show_flavortext;
 
+	// Place initial objects
 	for(var i = 0; i < blocks.length; i++){
 		var obj = blocks[i];
 		switch(obj[0]){
@@ -131,10 +161,12 @@ function load_level(lnum,should_show_flavortext){
 	active_buttons=checkButtons();
 }
 
+// Version of mod that always returns positive numbers (i.e. -3 mod 4 = 1)
 function goodMod(x,m){
 	return (x%m+m)%m;
 }
 
+// Returns true if player at coordinate intersects with an object
 function hits(x,y,obj){
 	return x > obj[1]-RADIUS
 		&& x < obj[1]+obj[3]+RADIUS
@@ -142,6 +174,7 @@ function hits(x,y,obj){
 		&& y < obj[2]+obj[4]+RADIUS;
 }
 
+// Returns true if center of player is on an object
 function on(x,y,obj){
 	return x > obj[1]
 		&& x < obj[1]+obj[3]
@@ -149,6 +182,7 @@ function on(x,y,obj){
 		&& y < obj[2]+obj[4];
 }
 
+// Returns true if a box is on the specified button
 function pressed_button(obj){
 	var pressed = false;
 	for(var j = 0; j < boxes.length; j++){
@@ -159,10 +193,13 @@ function pressed_button(obj){
 	return pressed;
 }
 
+// Returns true if the i-th push-button trigger has been pushed
 function pressed_trigger(i){
 	return (triggers[i][0] < time || triggers[i][1] > time);
 }
 
+// Check all buttons and triggers, and create mapping from letter indexes to booleans
+// representing whether or not they have been pressed
 function checkButtons(){
 	var res={};
 	var idx=97;//'a'.charCodeAt(0);
@@ -194,6 +231,7 @@ function checkActive(obj){
 	return goodMod(Math.floor(time/60),parseInt(parts[2])) == (parseInt(parts[3])||0);
 }
 
+// Get all buttons that connect to a given field or door
 function getConnectedObjs(obj){
 	if(obj[5]==undefined) return [];
 	var parts = active_code_re.exec(obj[5]);
@@ -212,6 +250,7 @@ function getConnectedObjs(obj){
 	return res;
 }
 
+// Check if the player would collide with something
 function checkCollides(x,y,fwd,box){
 	for(var i = 0; i < blocks.length; i++){
 		var obj=blocks[i];
@@ -232,6 +271,7 @@ function checkCollides(x,y,fwd,box){
 	};
 }
 
+// Determine which directions the player is allowed to move
 function check_oneway(x,y){
 	var allowed_dirs = [1,1,1,1];
 	for(var i = 0; i < blocks.length; i++){
@@ -242,6 +282,7 @@ function check_oneway(x,y){
 	return allowed_dirs;
 }
 
+// Check if the player has been killed
 function killed(x,y){
 	for(var i = 0; i < blocks.length; i++){
 		var obj=blocks[i];
@@ -249,9 +290,15 @@ function killed(x,y){
 			return true;
 	};
 }
+
+// Check if two points are "close enough". Used for pushing buttons, using
+// exits, and putting boxes on buttons 
 function near(x1,y1,x2,y2){
-	return abs(x1-x2)+abs(y1-y2)<2*RADIUS;
+	return abs(x1-x2)+abs(y1-y2)<.45;
 }
+
+// Try to grab a box at the specified location. Return the grabbed box if found,
+// and remove that box from the boxes list. Otherwise implicitly return undefined
 function grabBox(x,y){
 	for(var i = 0; i < boxes.length; i++){
 		var box = boxes[i];
@@ -268,6 +315,7 @@ function grabBox(x,y){
 	}
 }
 
+// Update the player's position
 function move_player(){
 
 	var allowed_dirs = check_oneway(posx,posy);
@@ -354,6 +402,9 @@ function move_player(){
 	return true;
 }
 
+// Walk through all previous versions of the player, and make sure they all can
+// progress correctly. Checks in direction fwd, and if check_last is true also
+// checks the most recent version of the player
 function check_histories(fwd,check_last){
 	var moved=false;
 	for (var i = check_last?0:1; i < histories.length; i++) {
@@ -400,6 +451,7 @@ function check_histories(fwd,check_last){
 	return moved;
 }
 
+// Called once per frame. Updates the game state
 function update(){
 	if(aframe){
 		window.cancelAnimationFrame(aframe);
@@ -484,12 +536,14 @@ function update(){
 	aframe = window.requestAnimationFrame(update);
 }
 
+// Helper function to draw text at a specified location
 function drawText(text,size,x,y,modifiers,font,wrap_width){
 	ctx.save();
 	ctx.translate(x,y);
 	ctx.scale(1/BLOCKSIZE, 1/BLOCKSIZE);
 	ctx.font = (modifiers?modifiers+" ":"") + (size*BLOCKSIZE) + "px "+(font||"sans-serif");
 	if(wrap_width){
+		// Use multiline text
 		wrap_width *= BLOCKSIZE;
 		var words = [];
 		var lines = text.split('\n');
@@ -515,6 +569,7 @@ function drawText(text,size,x,y,modifiers,font,wrap_width){
 	ctx.restore();
 }
 
+// Called once per frame. Draws everything to the canvas.
 function draw(){
 	ctx.save();
 	ctx.scale(BLOCKSIZE,BLOCKSIZE);
@@ -821,8 +876,8 @@ function draw(){
 	ctx.restore();
 }
 
+// Key handlers to detect input
 addEventListener("keydown", function(e) {
-	if(levelloader==document.activeElement) return;
 	e = e || window.event;
 
 	if(showing_flavortext){
@@ -856,29 +911,14 @@ addEventListener("keydown", function(e) {
 	e.preventDefault();
 });
 addEventListener("keyup", function(e) {
-	if(levelloader==document.activeElement) return;
 	e = e || window.event;
 	dirs[e.keyCode-37] = 0;
 	// console.log(dirs);
 	e.preventDefault();
 });
 
-var levelloader;
 window.onload=function(){
 	setup();
 	start();
 	update();
-
-	levelloader = document.getElementById("levelloader");
-	levelloader.addEventListener("input",function(){
-		try{
-			var nlevel = eval(levelloader.value);
-			levels[levels.length-1] = nlevel;
-			load_level(levels.length-1,true);
-			update();
-			// paused=true;
-		} catch (e) {
-		   console.warn(e);
-		}
-	})
 }

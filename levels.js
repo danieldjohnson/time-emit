@@ -484,10 +484,11 @@ seconds before detonation.\"\n\
 	[BLOCK_EXIT,15,11],
 
 	[BLOCK_FWD,0,0,3,5],
+	[BLOCK_FWD,0,14,15,2],
 
 	[BLOCK_FWD,0,5,16,3,'a'],
 	[BLOCK_FWD,1,8,2,3,'a'],
-	[BLOCK_FWD,0,11,15,5,'a'],
+	[BLOCK_FWD,0,11,15,3,'a'],
 	[BLOCK_LASER,15,11,1,1,'a'],
 	[BLOCK_DOOR,1,3,1,2,'A'],
 
