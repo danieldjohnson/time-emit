@@ -881,6 +881,7 @@ addEventListener("keydown", function(e) {
 
 	if(showing_flavortext){
 		showing_flavortext = false;
+		startAudioIfNeeded();
 		return;
 	}
 

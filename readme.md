@@ -2,7 +2,7 @@
 
 This is a tricky time-travel based puzzle game I made for js13k 2015.
 
-You are a visitor to an abandoned research facility operated by Causality Laboratories, and will use their Time-Reversal Device to solve a number of complex puzzles. Reverse the flow of time, and watch as an echo of yourself undoes your previous action. Use the TRD to team up with yourself, break the Law of Conservation of Matter, and move impossibly fast.
+You are a visitor to an abandoned research facility operated by Causality Laboratories, and will use their Time-Reversal Device to solve a number of complex puzzles. Reverse the flow of time, and watch as an echo of yourself undoes your previous action. Use the TRD to team up with yourself, break the Law of Conservation of Matter, and move impossibly fast!
 
 Features
 - Time travel!

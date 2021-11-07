@@ -79,50 +79,57 @@ function generate(t){
 	return level;
 }
 
-// Set up an audio context with a script processor, to allow us to generate the waveform
-// directly in JS. We also use a buffer source to use as input, even though we ignore that
-// input, because of how the script processor node works
-var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-var source = audioCtx.createBufferSource();
-var scriptNode = audioCtx.createScriptProcessor(1024, 0, 1);
-scriptNode.onaudioprocess = function(audioProcessingEvent) {
-	var outputBuffer = audioProcessingEvent.outputBuffer;
-	var chan = outputBuffer.getChannelData(0);
+var audioStarted = false;
+function startAudioIfNeeded() {
+	if (audioStarted) {
+		return;
+	}
+	audioStarted = true;
+	// Set up an audio context with a script processor, to allow us to generate the waveform
+	// directly in JS. We also use a buffer source to use as input, even though we ignore that
+	// input, because of how the script processor node works
+	var audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+	var source = audioCtx.createBufferSource();
+	var scriptNode = audioCtx.createScriptProcessor(1024, 0, 1);
+	scriptNode.onaudioprocess = function (audioProcessingEvent) {
+		var outputBuffer = audioProcessingEvent.outputBuffer;
+		var chan = outputBuffer.getChannelData(0);
 
-	if(muted) {
-		for (var i = 0; i < outputBuffer.length; i++) {
-			chan[i] = 0;
-		}
-	} else {
-		var play_fwd = replay_check_state ? replay_check_state==REPLAY_STATE_FWD : isfwd;
-		// var play_delta = replay_check_state ? (replay_check_state==REPLAY_STATE_FWD ? REPLAY_FWD_SPEED:REPLAY_REW_SPEED) : isfwd?1:-1;
+		if (muted) {
+			for (var i = 0; i < outputBuffer.length; i++) {
+				chan[i] = 0;
+			}
+		} else {
+			var play_fwd = replay_check_state ? replay_check_state == REPLAY_STATE_FWD : isfwd;
+			// var play_delta = replay_check_state ? (replay_check_state==REPLAY_STATE_FWD ? REPLAY_FWD_SPEED:REPLAY_REW_SPEED) : isfwd?1:-1;
 
-		// If necessary, generate some more notes
-		if(play_fwd && audiotime > evtBoundsEnd-SAMPLE_RATE){
-			fill(evtBoundsEnd,audiotime+SAMPLE_RATE);
-			evtBoundsEnd=audiotime+SAMPLE_RATE;
-		} else if(!play_fwd && audiotime < evtBoundsStart+2*SAMPLE_RATE){
-			fill(audiotime-2*SAMPLE_RATE,evtBoundsStart);
-			evtBoundsStart=audiotime-2*SAMPLE_RATE;
-		} 
+			// If necessary, generate some more notes
+			if (play_fwd && audiotime > evtBoundsEnd - SAMPLE_RATE) {
+				fill(evtBoundsEnd, audiotime + SAMPLE_RATE);
+				evtBoundsEnd = audiotime + SAMPLE_RATE;
+			} else if (!play_fwd && audiotime < evtBoundsStart + 2 * SAMPLE_RATE) {
+				fill(audiotime - 2 * SAMPLE_RATE, evtBoundsStart);
+				evtBoundsStart = audiotime - 2 * SAMPLE_RATE;
+			}
 
-		// We need to save our events, since the audio plays backward in reversed time mode. But
-		// we don't want to store too many notes. If we have 500, clear the array to save space
-		if( evts.length > 500 ){
-			evtBoundsStart=audiotime-2*SAMPLE_RATE;
-			evtBoundsEnd=audiotime+SAMPLE_RATE;
-			evts = evts.filter(function(x){
-				return (x[0] > evtBoundsStart && x[0] < evtBoundsEnd);
-			});
-		}
+			// We need to save our events, since the audio plays backward in reversed time mode. But
+			// we don't want to store too many notes. If we have 500, clear the array to save space
+			if (evts.length > 500) {
+				evtBoundsStart = audiotime - 2 * SAMPLE_RATE;
+				evtBoundsEnd = audiotime + SAMPLE_RATE;
+				evts = evts.filter(function (x) {
+					return (x[0] > evtBoundsStart && x[0] < evtBoundsEnd);
+				});
+			}
 
-		// Fill the buffer with the generated waveforms
-		for (var i = 0; i < outputBuffer.length; i++) {
-			audiotime+=play_fwd ? 1 : -1;
-			chan[i] = generate(audiotime);
+			// Fill the buffer with the generated waveforms
+			for (var i = 0; i < outputBuffer.length; i++) {
+				audiotime += play_fwd ? 1 : -1;
+				chan[i] = generate(audiotime);
+			}
 		}
 	}
+	source.connect(scriptNode);
+	scriptNode.connect(audioCtx.destination);
+	source.start();
 }
-source.connect(scriptNode);
-scriptNode.connect(audioCtx.destination);
-source.start();
